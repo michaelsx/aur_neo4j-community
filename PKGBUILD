@@ -16,84 +16,78 @@ options=(!strip)
 #install=neo4j.install
 source=(http://dist.neo4j.org/neo4j-community-$pkgver-unix.tar.gz
         neo4j.conf
+        neo4j.sysuser
         neo4j.service)
 sha256sums=('2594e5af77a9fad2338febe3b868d17dbd40fe537455758d19780d88621c8387'
-            '1d0bff4f2074441958b2019d531741f0728f0450f3775a2810e1d226f1d49547'
-            '002e1689b5707e481083d5d3a87e164ca4774af885962e38c657258ba29a4b51')
+            'a15570b179dce85e695ae4f98bf6784a93f8eb120a2690ffcc43b5c83e7c7417'
+            '67a4ea5dc27c805bfcd3efb02f851856425e1d1beac80741a45b8233daf2f500'
+            'ae67e7219d1905a86156fd5c02d646f2c714497b3b11b8547746b9eed42f8f44')
 package() {
 
-  # Directories as in Debian/RPM: https://neo4j.com/docs/operations-manual/current/configuration/file-locations/
+  ############################
+  # Directories as in Debian/RPM (excluding conf., which was not working): https://neo4j.com/docs/operations-manual/current/configuration/file-locations/
+  ############################
   BIN_DIR=usr/bin
-  #Config dir seems to be adapted
-  #CONFIG_DIR=etc/neo4j
   CONFIG_DIR=usr/share/neo4j/conf
   DATA_DIR=var/lib/neo4j/data
   IMPORT_DIR=var/lib/neo4j/import
   LABS_DIR=usr/share/neo4j/labs
   LIB_DIR=usr/share/neo4j/lib
   LICENSES_DIR=usr/share/neo4j/licenses
-  LOGS_DIR=var/log/neo4j
+  LOG_DIR=var/log/neo4j
   METRICS_DIR=var/lib/neo4j/metrics
   PLUGINS_DIR=var/lib/neo4j/plugins
-  RUN_DIR=var/lib/neo4j/run
+  RUN_DIR=run/neo4j
+  # Additional
+  USR_BIN_DIR=usr/share/neo4j/bin
+  DOC_DIR=usr/share/doc/neo4j
 
-  # Install directories 
+  ############################
+  # Install directories with files
+  ############################
 
-  cd $srcdir/neo4j-community-$pkgver
+  # Read-only directories for user
+  install -d -m 755 $pkgdir/$CONFIG_DIR
+  install -d -m 755 $pkgdir/$IMPORT_DIR
+  install -d -m 755 $pkgdir/$USR_BIN_DIR #currently workaround
+  install -d -m 755 $pkgdir/$BIN_DIR
+  install -d -m 755 $pkgdir/$LIB_DIR
+  install -d -m 755 $pkgdir/$PLUGINS_DIR
+  install -d -m 755 $pkgdir/$CONFIG_DIR/certificates
+  install -d -m 755 $pkgdir/$LICENSES_DIR
 
-  # Config files
-  install -dm755 $pkgdir/$CONFIG_DIR
-  install -dm700 $pkgdir/$CONFIG_DIR/certificates
-  install -Dm644 $srcdir/neo4j.conf $pkgdir/$CONFIG_DIR/neo4j.conf
+  # Read-write
+  install -m 775 -g neo4j -d $pkgdir/$DATA_DIR
+  install -m 775 -g neo4j -d $pkgdir/$LOG_DIR
+  install -m 775 -g neo4j -d $pkgdir/$METRICS_DIR
+  install -m 775 -g neo4j -d $pkgdir/$RUN_DIR
 
-  # Data, import and log files
-  #DATA_DIR=var/lib/neo4j/data
-  install -dm755 $pkgdir/$DATA_DIR
-  [[ $(ls -A data/* 2>/dev/null) ]] && cp -r data/* $pkgdir/$DATA_DIR
+  # Additional
+  install -d -m 755 $pkgdir/$DOC_DIR
 
-  #IMPORT_DIR=var/lib/neo4j/import
-  install -dm755 $pkgdir/$IMPORT_DIR
-  [[ $(ls -A import/* 2>/dev/null) ]] && cp -r import/* $pkgdir/$IMPORT_DIR
+  ############################
+  # Install files
+  ############################
+  NEO4JSRC=$srcdir/neo4j-community-$pkgver
 
-  #LOG_DIR=var/log/neo4j
-  install -dm755 $pkgdir/$LOG_DIR
-  [[ $(ls -A logs/* 2>/dev/null) ]] && cp -r logs/* $pkgdir/$LOG_DIR
+  # Install direct files
+  install -D $srcdir/neo4j.conf -t $pkgdir/$CONFIG_DIR
+  install -D $NEO4JSRC/README.txt $NEO4JSRC/UPGRADE.txt -t $pkgdir/$DOC_DIR
+  install -D $NEO4JSRC/LICENSE.txt $NEO4JSRC/LICENSES.txt $NEO4JSRC/NOTICE.txt -t $pkgdir/$LICENSES_DIR
 
-  # Copy JARs in lib and plugins
-  #LIB_DIR=usr/share/java/neo4j/lib
-  install -dm755 $pkgdir/$LIB_DIR
-  [[ $(ls -A lib/* 2>/dev/null) ]] && cp -r lib/* $pkgdir/$LIB_DIR
-
-  #PLUGINS_DIR=usr/share/java/neo4j/plugins
-  install -dm755 $pkgdir/$PLUGINS_DIR
-  [[ $(ls -A plugins/* 2>/dev/null) ]] && cp -r plugins/* $pkgdir/$PLUGINS_DIR
+  [[ $(ls -A $NEO4JSRC/logs/* 2>/dev/null) ]] && cp -r $NEO4JSRC/logs/* $pkgdir/$LOG_DIR
+  [[ $(ls -A $NEO4JSRC/lib/* 2>/dev/null) ]] && cp -r $NEO4JSRC/lib/* $pkgdir/$LIB_DIR
+  [[ $(ls -A $NEO4JSRC/plugins/* 2>/dev/null) ]] && cp -r $NEO4JSRC/plugins/* $pkgdir/$PLUGINS_DIR
+  [[ $(ls -A $NEO4JSRC/import/* 2>/dev/null) ]] && cp -r $NEO4JSRC/import/* -t $pkgdir/$IMPORT_DIR
 
   # Executable files
-  USR_BIN_DIR=usr/share/neo4j/bin
-  install -dm755 $pkgdir/$USR_BIN_DIR
-  [[ $(ls -A bin/* 2>/dev/null) ]] && cp -r bin/* $pkgdir/$USR_BIN_DIR
+  install -D -m 644 $srcdir/neo4j.service $pkgdir/usr/lib/systemd/system/neo4j.service
 
-  #SYSTEM_BIN_DIR=usr/bin
-  install -dm755 $pkgdir/$BIN_DIR
+  install -D -m 644 $srcdir/neo4j.sysuser $pkgdir/usr/lib/sysusers.d/neo4j.conf
+  install -D -m 775 $NEO4JSRC/bin/cypher-shell $NEO4JSRC/bin/neo4j $NEO4JSRC/bin/neo4j-admin -t $pkgdir/$USR_BIN_DIR
+  install -D -m 775 $NEO4JSRC/bin/tools/cypher-shell.jar -t $pkgdir/$USR_BIN_DIR
   for file in $(find $pkgdir/$USR_BIN_DIR -maxdepth 1 -type f); do
     b_file=$(basename $file)
     ln -s /$USR_BIN_DIR/$b_file $pkgdir/$BIN_DIR/$b_file;
   done
-
-  # Documentation
-  DOC_DIR=usr/share/doc/neo4j
-  install -dm755 $pkgdir/$DOC_DIR
-  cp README.txt UPGRADE.txt $pkgdir/$DOC_DIR
-
-  # License files
-  #LICENSES_DIR=usr/share/licenses/neo4j
-  install -dm755 $pkgdir/$LICENSES_DIR
-  cp LICENSE.txt LICENSES.txt NOTICE.txt $pkgdir/$LICENSES_DIR
-
-  # Service definition files
-  install -Dm644 $srcdir/neo4j.service $pkgdir/usr/lib/systemd/system/neo4j.service
-
-  # Runtime files
-  #install -Dm644 $srcdir/neo4j-tmpfile.conf $pkgdir/usr/lib/tmpfiles.d/neo4j.conf
-  install -dm755 $pkgdir/$RUN_DIR
 }

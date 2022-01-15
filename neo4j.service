@@ -2,15 +2,20 @@
 Description=Neo4j
 
 [Service]
+# The user and group which the service runs as.
 User=neo4j
+Group=neo4j
+# If it takes longer than this then the shutdown is considered to have failed.
+# This may need to be increased if the system serves long-running transactions.
+TimeoutSec=120
+
 Type=forking
-Environment=NEO4J_CONF=/etc/neo4j
-Environment=NEO4J_HOME=/usr/share/java/neo4j
-Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+Environment=NEO4J_CONF=/usr/share/neo4j/conf
+Environment=NEO4J_HOME=/usr/share/neo4j
 ExecStart=/usr/bin/neo4j start
 ExecStop=/usr/bin/neo4j stop
-PIDFile=/run/neo4j/neo4j.pid
 LimitNOFILE=40000
 
 [Install]
 WantedBy=multi-user.target
+
