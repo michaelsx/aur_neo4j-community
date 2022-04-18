@@ -2,7 +2,7 @@
 # Contributor: Marcel Campello Ferreira <marcel.campello.ferreira@gmail.com>
 # Contributor: Mark Dixon <mark@markdixon.name>
 pkgname=neo4j-community
-pkgver=4.4.2
+pkgver=4.4.5
 pkgrel=1
 pkgdesc='A fully transactional graph database implemented in Java'
 arch=(any)
@@ -13,17 +13,18 @@ depends=('jre11-openjdk-headless')
 conflicts=(neo4j-enterprise)
 backup=(usr/share/neo4j/conf/neo4j.conf)
 options=(!strip)
-#install=neo4j.install
+install=neo4j.install
 source=(http://dist.neo4j.org/neo4j-community-$pkgver-unix.tar.gz
         neo4j.conf
+	neo4j.install
         neo4j.sysuser
         neo4j.service)
-sha256sums=('2594e5af77a9fad2338febe3b868d17dbd40fe537455758d19780d88621c8387'
+sha256sums=('26a3fa9f3c567a9edd337e2a33c82cc25e9ee65ca83e69ba52af628b96abb745'
             'a15570b179dce85e695ae4f98bf6784a93f8eb120a2690ffcc43b5c83e7c7417'
+	    'e95540f908ebc41f88bf1c61befb5df9434a804f5c89abced65286302cf2dafa'
             '67a4ea5dc27c805bfcd3efb02f851856425e1d1beac80741a45b8233daf2f500'
-            'ae67e7219d1905a86156fd5c02d646f2c714497b3b11b8547746b9eed42f8f44')
+	    'e39f383a26a0e50dff9760af8f9cf6b63213de10c0f898ddfb3661aa1fed828b')
 package() {
-
   ############################
   # Directories as in Debian/RPM (excluding conf., which was not working): https://neo4j.com/docs/operations-manual/current/configuration/file-locations/
   ############################
@@ -57,10 +58,10 @@ package() {
   install -d -m 755 $pkgdir/$LICENSES_DIR
 
   # Read-write
-  install -m 775 -g neo4j -d $pkgdir/$DATA_DIR
-  install -m 775 -g neo4j -d $pkgdir/$LOG_DIR
-  install -m 775 -g neo4j -d $pkgdir/$METRICS_DIR
-  install -m 775 -g neo4j -d $pkgdir/$RUN_DIR
+  install -d -m 775 $pkgdir/$DATA_DIR
+  install -d -m 775 $pkgdir/$LOG_DIR
+  install -d -m 775 $pkgdir/$METRICS_DIR
+  install -d -m 775 $pkgdir/$RUN_DIR
 
   # Additional
   install -d -m 755 $pkgdir/$DOC_DIR
