@@ -12,10 +12,10 @@ TimeoutSec=120
 Type=forking
 Environment=NEO4J_CONF=/usr/share/neo4j/conf
 Environment=NEO4J_HOME=/usr/share/neo4j
-Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ExecStart=/usr/bin/neo4j start
 ExecStop=/usr/bin/neo4j stop
-LimitNOFILE=40000
+LimitNOFILE=60000
 
 [Install]
 WantedBy=multi-user.target
