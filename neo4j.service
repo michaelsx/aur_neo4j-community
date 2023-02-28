@@ -15,7 +15,7 @@ Environment=NEO4J_HOME=/usr/share/neo4j
 Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ExecStart=/usr/bin/neo4j start
 ExecStop=/usr/bin/neo4j stop
-LimitNOFILE=40000
+LimitNOFILE=60000
 
 [Install]
 WantedBy=multi-user.target
